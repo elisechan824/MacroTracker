@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MacroTracker</title>
+</head>
+<body>
+    <div class="header" style="text-align: center;">
+        <h1 style="background-color: #c5f1cc;">
+            MacroTracker
+        </h1>
+        <p>Phase 5: Insert/Delete/Update functionality</p>
+    </div>
+    <table style="width:100%">
+        <tr>
+            <td style="width:50%; vertical-align: top;">
+                <h2>foodItem Table</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>foodID</th>
+                            <th>foodName</th>
+                            <th>foodGroup</th>
+                            <th>calories</th>
+                            <th>servingSize</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for food_item in food_items %}
+                        <tr>
+                            <td>{{ food_item[0] }}</td>
+                            <td>{{ food_item[1] }}</td>
+                            <td>{{ food_item[2] }}</td>
+                            <td>{{ food_item[3] }}</td>
+                            <td>{{ food_item[4] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </td>
+            <td style="width:50%; vertical-align: top;">
+                <!-- Input form goes here -->
+                <h2>Editor</h2>
+                <h3>Insert</h3>
+                <form action="/insertFoodItem" method="post">
+                    <input type="text" name="foodID" placeholder="foodID (VARCHAR(255))"><br>
+                    <input type="text" name="foodName" placeholder="foodName (VARCHAR(255))"><br>
+                    <input type="text" name="foodGroup" placeholder="foodGroup (VARCHAR(255))"><br>
+                    <input type="text" name="calories" placeholder="calories (INT)"><br>
+                    <input type="text" name="servingSize" placeholder="serving size (VARCHAR(255))"><br><br>
+                    <button type="submit">Submit</button>
+                </form><br><br>
+                <h3>Delete</h3>
+                <form action="/deleteFoodItem" method="post">
+                    <input type="text" name="foodID" placeholder="foodID (VARCHAR(255))"><br>
+                    <button type="submit">Submit</button>
+                </form><br><br>
+                <h3>Update</h3>
+                <p>Make sure to fill each input box</p>
+                <form action="/updateFoodItem" method="post">
+                    <input type="text" name="foodID" placeholder="foodID (VARCHAR(255))"><br>
+                    <input type="text" name="foodName" placeholder="foodName (VARCHAR(255))"><br>
+                    <input type="text" name="foodGroup" placeholder="foodGroup (VARCHAR(255))"><br>
+                    <input type="text" name="calories" placeholder="calories (INT)"><br>
+                    <input type="text" name="servingSize" placeholder="serving size (VARCHAR(255))"><br><br>
+                    <button type="submit">Submit</button>
+                </form><br><br>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
