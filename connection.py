@@ -7,7 +7,7 @@ app = Flask(__name__)
 config = {
     'host': 'localhost',
     'user': 'root',
-    'password': os.getenv("MYSQL_PASSWORD"),
+    'password': os.getenv('MYSQL_PASSWORD'),
     'database': 'macrotracker'
 }
 
@@ -20,6 +20,51 @@ def index():
     cursor.close()
     conn.close()
     return render_template('index.html', food_items=food_items)
+
+@app.route('/login')
+def login():
+    error_message = request.args.get('error_message')
+    return render_template('login.html', error_message=error_message)
+
+@app.route('/signup')
+def signup():
+    return render_template('signup.html')
+
+@app.route('/addUser', methods=['POST'])
+def addUser():
+    userID = request.form['userID']
+    fullname = request.form['fullname']
+    gender = request.form['gender']
+    dob = request.form['dob']
+    age = request.form['age']
+    weight = request.form['weight']
+    height = request.form['height']
+    password = request.form['password']
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO user (userID, user_name, gender, dob, age, weight, height, password) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                   (userID, fullname, gender, dob, age, weight, height, password))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for('index'))
+
+@app.route('/loginUser', methods=['POST'])
+def loginUser():
+    userID = request.form['userID']
+    password = request.form['password']
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM user WHERE userID = %s;",
+                   (userID,))
+    user = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if user is None:
+        return redirect(url_for('login') + '?error_message=No+such+user')
+    if password != user[7]:
+        return redirect(url_for('login') + '?error_message=Incorrect+password')
+    return redirect(url_for('index'))
 
 @app.route('/insertFoodItem', methods=['POST'])
 def insertFoodItem():

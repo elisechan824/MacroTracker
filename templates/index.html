@@ -7,6 +7,25 @@
     <div class="header" style="text-align: center;">
         <h1 style="background-color: #c5f1cc;">
             MacroTracker
+            <button style="float: right;" onclick="renderTemplate()">Sign Up/Login</button>
+            <script>
+                function renderTemplate() {
+                    fetch('/signup')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Unable to perform action');
+                            }
+                            return response.text();
+                        })
+                        .then(html => {
+                            // Replace the current page content with the rendered HTML
+                            document.documentElement.innerHTML = html;
+                        })
+                        .catch(error => {
+                            console.error('There was a problem with the fetch operation:', error);
+                        });
+                }
+            </script>
         </h1>
         <p>Phase 5: Insert/Delete/Update functionality</p>
     </div>
