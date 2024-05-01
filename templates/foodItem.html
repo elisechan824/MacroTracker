@@ -7,7 +7,14 @@
     <div class="header" style="text-align: center;">
         <h1 style="background-color: #c5f1cc;">
             MacroTracker
+            {% if current_user %}
+            <span>Welcome, {{ current_user['user_name'] }}</span>
+            <form action="/logout" method="post" style="display: inline;">
+                <button type="submit">Logout</button>
+            </form>
+            {% else %}
             <button style="float: right;" onclick="renderTemplate()">Sign Up/Login</button>
+            {% endif %}
             <script>
                 function renderTemplate() {
                     fetch('/signup')
@@ -27,7 +34,7 @@
                 }
             </script>
         </h1>
-        <p>Phase 5: Insert/Delete/Update functionality</p>
+        <p>FoodItems</p>
     </div>
     <table style="width:100%">
         <tr>

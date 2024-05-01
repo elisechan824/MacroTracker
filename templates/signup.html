@@ -67,6 +67,9 @@
             <input type="password" name="password" placeholder="Password *" required><br>
             <input type="submit" value="Sign Up">
         </form>
+        {% if error_message %}
+        <p style="color: red;"> {{ error_message }}</p>
+        {% endif %}
     </div>
 
     <p style="text-align: center;">Already signed up? <a href="/login">Log in</a></p>

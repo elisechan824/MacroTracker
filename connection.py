@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import mysql.connector
-import os
+import os, json
 
 app = Flask(__name__)
+app.secret_key = os.getenv('MYSQL_PASSWORD')
 
 config = {
     'host': 'localhost',
@@ -11,16 +12,24 @@ config = {
     'database': 'macrotracker'
 }
 
+user_data = {}
+
 @app.route('/')
-def index():
+def foodItem():
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM foodItem")
     food_items = cursor.fetchall()  # Fetch all rows from the result
     cursor.close()
     conn.close()
-    return render_template('index.html', food_items=food_items)
+    return render_template('foodItem.html', food_items=food_items)
 
+##### USER PROFILE FUNCTIONALITY #####
+@app.route('/profile')
+def profile():
+    return render_template('user.html', user_data=user_data)
+
+##### LOGIN/SIGNUP FUNCTIONALITY
 @app.route('/login')
 def login():
     error_message = request.args.get('error_message')
@@ -28,7 +37,8 @@ def login():
 
 @app.route('/signup')
 def signup():
-    return render_template('signup.html')
+    error_message = request.args.get('error_message')
+    return render_template('signup.html', error_message=error_message)
 
 @app.route('/addUser', methods=['POST'])
 def addUser():
@@ -42,12 +52,30 @@ def addUser():
     password = request.form['password']
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO user (userID, user_name, gender, dob, age, weight, height, password) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                   (userID, fullname, gender, dob, age, weight, height, password))
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return redirect(url_for('index'))
+    cursor.execute("SELECT * FROM user WHERE userID = %s", (userID, ))
+    results = cursor.fetchone()
+
+    if results != None:
+        return redirect(url_for('signup') + '?error_message=userID+already+taken')
+    else :
+        cursor.execute("INSERT INTO user (userID, user_name, gender, dob, age, weight, height, password) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                    (userID, fullname, gender, dob, age, weight, height, password))
+        user_data = {
+            'userID': userID,
+            'user_name': fullname,
+            'gender': gender,
+            'dob': dob.format(),
+            'age': age,
+            'weight': weight,
+            'height': height,
+            'password': password
+        }
+        print(user_data)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        session['current_user'] = user_data
+        return redirect(url_for('foodItem'))
 
 @app.route('/loginUser', methods=['POST'])
 def loginUser():
@@ -64,8 +92,21 @@ def loginUser():
         return redirect(url_for('login') + '?error_message=No+such+user')
     if password != user[7]:
         return redirect(url_for('login') + '?error_message=Incorrect+password')
-    return redirect(url_for('index'))
+    user_data = {
+        'userID': user[0],
+        'user_name': user[1],
+        'gender': user[2],
+        'dob': user[3].isoformat(),
+        'age': user[4],
+        'weight': user[5],
+        'height': user[6],
+        'password': user[7]
+    }
+    session['current_user'] = user_data
+    print(user_data)
+    return redirect(url_for('foodItem'))
 
+##### FOODITEM FUNCTIONALITY #####
 @app.route('/insertFoodItem', methods=['POST'])
 def insertFoodItem():
     foodID = request.form['foodID']
@@ -80,7 +121,7 @@ def insertFoodItem():
     conn.commit()
     cursor.close()
     conn.close()
-    return redirect(url_for('index'))
+    return redirect(url_for('foodItem'))
 
 @app.route('/deleteFoodItem', methods=['POST'])
 def deleteFoodItem():
@@ -91,7 +132,7 @@ def deleteFoodItem():
     conn.commit()
     cursor.close()
     conn.close()
-    return redirect(url_for('index'))
+    return redirect(url_for('foodItem'))
 
 @app.route('/updateFoodItem', methods=['POST'])
 def updateFoodItem():
@@ -107,7 +148,7 @@ def updateFoodItem():
     conn.commit()
     cursor.close()
     conn.close()
-    return redirect(url_for('index'))
+    return redirect(url_for('foodItem'))
 
 if __name__ == '__main__':
     app.run(debug=True)
@@ -125,4 +166,4 @@ if __name__ == '__main__':
 #     conn.commit()
 #     cursor.close()
 #     conn.close()
-#     return redirect(url_for('index'))
+#     return redirect(url_for('foodItem'))
