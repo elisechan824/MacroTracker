@@ -3,16 +3,18 @@ import mysql.connector
 import os
 
 app = Flask(__name__)
-app.secret_key = os.getenv('MYSQL_PASSWORD', 'Jinrie2713')
+app.secret_key = os.getenv('MYSQL_PASSWORD')
+
+user_data = {}
 
 config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'Jinrie2713',
+    'password': os.getenv('MYSQL_PASSWORD'),
     'database': 'macrotracker'
 }
 
-@app.route('/foodItem')
+@app.route('/')
 def foodItem():
     if 'current_user' not in session:
         return redirect(url_for('login'))
@@ -23,7 +25,7 @@ def foodItem():
     food_items = cursor.fetchall()
     cursor.close()
     conn.close()
-    return render_template('foodItem.html', current_user=session.get('current_user'), food_items=food_items)
+    return render_template('foodItem.html', current_user=user_data, food_items=food_items)
 
 ##### USER PROFILE FUNCTIONALITY #####
 @app.route('/profile', methods=['GET', 'POST'])
@@ -39,15 +41,19 @@ def profile():
         age = request.form['age']
         weight = request.form['weight']
         height = request.form['height']
-        password = request.form['password']
-        target_daily_cals = request.form['target_daily_cals']
+        # target_daily_cals = request.form['target_daily_cals']
         
         conn = mysql.connector.connect(**config)
         cursor = conn.cursor()
+        # cursor.execute("""UPDATE user 
+        #                SET user_name=%s, gender=%s, dob=%s, age=%s, weight=%s, height=%s, password=%s, target_daily_cals=%s
+        #                WHERE userID = %s""",
+        #                 (fullname, gender, dob, age, weight, height, password, target_daily_cals, userID))
         cursor.execute("""UPDATE user 
-                       SET user_name=%s, gender=%s, dob=%s, age=%s, weight=%s, height=%s, password=%s, target_daily_cals=%s
+                       SET user_name=%s, gender=%s, dob=%s, age=%s, weight=%s, height=%s, password=%s
                        WHERE userID = %s""",
-                        (fullname, gender, dob, age, weight, height, password, target_daily_cals, userID))
+                        (fullname, gender, dob, age, weight, height, password, userID))
+        
         conn.commit()
         cursor.close()
         conn.close()
@@ -59,14 +65,19 @@ def profile():
             'age': age,
             'weight': weight,
             'height': height,
-            'password': password,
-            'target_daily_cals': target_daily_cals
+            'password': password
+            # 'target_daily_cals': target_daily_cals
         })
         
         session['current_user'] = user_data
         return redirect(url_for('profile'))
     
     return render_template('user.html', current_user=user_data)
+
+@app.route('/logout')
+def logout():
+    session.pop('current_user', None)
+    return redirect(url_for('login'))
 
 ##### LOGIN/SIGNUP FUNCTIONALITY
 @app.route('/login')
@@ -92,6 +103,10 @@ def addUser():
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
 
+    # get fooditems
+    cursor.execute("SELECT * FROM foodItem")
+    food_items = cursor.fetchall()
+
     cursor.execute("SELECT * FROM user WHERE userID = %s", (userID, ))
     results = cursor.fetchone()
 
@@ -108,14 +123,14 @@ def addUser():
             'age': age,
             'weight': weight,
             'height': height,
-            'password': password,
-            'target_daily_cals': ''
+            'password': password
+            # 'target_daily_cals': ''
         }
         conn.commit()
         cursor.close()
         conn.close()
         session['current_user'] = user_data
-        return redirect(url_for('foodItem'))
+        return render_template('foodItem.html', current_user=user_data, food_items=food_items)
 
 @app.route('/loginUser', methods=['POST'])
 def loginUser():
@@ -124,12 +139,18 @@ def loginUser():
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
 
+    # get fooditems
+    cursor.execute("SELECT * FROM foodItem")
+    food_items = cursor.fetchall()
+
+    # get user data
     cursor.execute("SELECT * FROM user WHERE userID = %s;", (userID,))
     user = cursor.fetchone()
 
     cursor.close()
     conn.close()
 
+    # login verification logic
     if user is None:
         return redirect(url_for('login') + '?error_message=No+such+user')
     if password != user[7]:
@@ -143,11 +164,11 @@ def loginUser():
         'weight': user[5],
         'height': user[6],
         'password': user[7],
-        'target_daily_cals': user[8]
+        # 'target_daily_cals': user[8]
     }
      
     session['current_user'] = user_data
-    return redirect(url_for('foodItem'))
+    return render_template('foodItem.html', current_user=user_data, food_items=food_items)
 
 ##### FOODITEM FUNCTIONALITY #####
 @app.route('/insertFoodItem', methods=['POST'])

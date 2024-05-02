@@ -46,7 +46,6 @@
                         return response.text();
                     })
                     .then(html => {
-                        // Replace the current page content with the rendered HTML
                         document.documentElement.innerHTML = html;
                     })
                     .catch(error => {
@@ -54,9 +53,8 @@
                     });
             }
         </script>
-    
-        <p>FoodItems</p>
     </div>
+    <h2 style="text-align: center;">FoodItems</h2>
     <table style="width:100%">
         <tr>
             <td style="width:50%; vertical-align: top;">
@@ -85,7 +83,6 @@
                 </table>
             </td>
             <td style="width:50%; vertical-align: top;">
-                <!-- Input form goes here -->
                 <h2>Editor</h2>
                 <h3>Insert</h3>
                 <form action="/insertFoodItem" method="post">

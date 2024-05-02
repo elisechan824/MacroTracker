@@ -58,7 +58,6 @@
                         return response.text();
                     })
                     .then(html => {
-                        // Replace the current page content with the rendered HTML
                         document.documentElement.innerHTML = html;
                     })
                     .catch(error => {
@@ -107,7 +106,6 @@
             
             <button type="submit">Update Profile</button>
         </form>
-        <!-- Button to go back to the foodItem page -->
         <form action="/foodItem">
             <button type="submit">Back to Food Items</button>
         </form>
