@@ -42,6 +42,7 @@ def profile():
         age = request.form['age']
         weight = request.form['weight']
         height = request.form['height']
+        password = request.form['password']
         # target_daily_cals = request.form['target_daily_cals']
         
         conn = mysql.connector.connect(**config)
@@ -51,9 +52,9 @@ def profile():
         #                WHERE userID = %s""",
         #                 (fullname, gender, dob, age, weight, height, password, target_daily_cals, userID))
         cursor.execute("""UPDATE user 
-                       SET user_name=%s, gender=%s, dob=%s, age=%s, weight=%s, height=%s, password=%s
+                       SET user_name=%s, gender=%s, age=%s, weight=%s, height=%s, password=%s
                        WHERE userID = %s""",
-                        (fullname, gender, dob, age, weight, height, password, userID))
+                        (fullname, gender, age, weight, height, password, userID))
         
         conn.commit()
         cursor.close()
