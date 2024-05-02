@@ -1,0 +1,12 @@
+Roles of Project Members
+Project Manager: Eunice Hong
+Eunice is responsible for overseeing the entire project,  including plaaning, coordination, communication, and ensuring that the project stays on track with its objectives and timeline. 
+
+Full Stack: Elise Chan
+Elise is responsible for developing both the frontend and the backend (server side logic and database interactions) of the project. She is
+
+UX/UI Designer Lead: Vy Dinh
+Vy focuses on creating intuitive and visually appealing user experiences and user interfaces. She ensures that the final project meets user needs and expectations.
+
+Documentation/Project Phase Design:  Danny Pham
+Danny is responsible for documenting the progress for the project phases. He ensures that the diagrams and milestones are made and met.
