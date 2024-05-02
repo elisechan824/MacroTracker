@@ -25,9 +25,53 @@ def foodItem():
     return render_template('foodItem.html', food_items=food_items)
 
 ##### USER PROFILE FUNCTIONALITY #####
-@app.route('/profile')
+@app.route('/profile', methods=['GET', 'POST'])
 def profile():
-    return render_template('user.html', user_data=user_data)
+    if 'current_user' not in session:
+        return redirect(url_for('login'))
+    user_data = session['current_user']
+    if request.method == 'POST':
+        userID = request.form['userID']
+        fullname = request.form['user_name']
+        gender = request.form['gender']
+        dob = request.form['dob']
+        age = request.form['age']
+        weight = request.form['weight']
+        height = request.form['height']
+        password = request.form['password']
+        
+        # Update the user's information in the database
+        # (You need to implement this part)
+
+        # Assuming the update was successful, update the session data
+        user_data = {
+            'userID': userID,
+            'user_name': fullname,
+            'gender': gender,
+            'dob': dob.format(),
+            'age': age,
+            'weight': weight,
+            'height': height,
+            'password': password
+        }
+        # print(user_data)
+        conn = mysql.connector.connect(**config)
+        cursor = conn.cursor()
+        cursor = conn.cursor(buffered=True)
+        cursor.execute("""UPDATE user 
+                       SET user_name=%s, gender=%s, age=%s, weight=%s, height=%s, password=%s
+                       WHERE userID = %s
+                       """,
+                        (fullname, gender, age, weight, height, password, userID))
+        results = cursor.fetchone()
+        print(results)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        session['current_user'] = user_data
+        return redirect(url_for('profile'))
+    
+    return render_template('user.html', current_user=user_data)
 
 ##### LOGIN/SIGNUP FUNCTIONALITY
 @app.route('/login')
@@ -83,11 +127,20 @@ def loginUser():
     password = request.form['password']
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
+
+    # get fooditems
+    cursor.execute("SELECT * FROM foodItem")
+    food_items = cursor.fetchall()
+    
+    # get user data
     cursor.execute("SELECT * FROM user WHERE userID = %s;",
                    (userID,))
     user = cursor.fetchone()
+
     cursor.close()
     conn.close()
+
+    # login verification logic
     if user is None:
         return redirect(url_for('login') + '?error_message=No+such+user')
     if password != user[7]:
@@ -102,18 +155,21 @@ def loginUser():
         'height': user[6],
         'password': user[7]
     }
+     
     session['current_user'] = user_data
-    print(user_data)
-    return redirect(url_for('foodItem'))
+    return render_template('foodItem.html', current_user=user_data, food_items=food_items)
 
 ##### FOODITEM FUNCTIONALITY #####
 @app.route('/insertFoodItem', methods=['POST'])
 def insertFoodItem():
+    # fetch form info from foodItem.html
     foodID = request.form['foodID']
     foodName = request.form['foodName']
     foodGroup = request.form['foodGroup']
     calories = request.form['calories']
     servingSize = request.form['servingSize']
+
+    # post to database
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
     cursor.execute("INSERT INTO foodItem (foodID, foodName, foodGroup, calories, servingSize) VALUES (%s, %s, %s, %s, %s)",

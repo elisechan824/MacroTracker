@@ -1,71 +1,108 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Page</title>
+    <title>User Profile</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        .header {
+            background-color: #c5f1cc;
+            text-align: center;
         }
         h1 {
-            text-align: center;
-            margin-bottom: 20px;
+            display: inline-block;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .user-info {
+            float: left;
+            margin-top: 10px;
+            margin-right: 10px;
         }
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
+        .logout-button {
+            float: right;
+            margin-top: 10px;
+            margin-right: 10px;
         }
-        th {
-            background-color: #f2f2f2;
+        .profile-info {
+            margin-top: 20px;
+        }
+        .profile-info label {
+            display: inline-block;
+            width: 150px;
+            text-align: right;
+            margin-right: 10px;
+        }
+        .profile-info input {
+            width: 200px;
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>User Information</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>User ID</th>
-                <th>Name</th>
-                <th>Gender</th>
-                <th>Date of Birth</th>
-                <th>Age</th>
-                <th>Weight</th>
-                <th>Height</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>cparks288</td>
-                <td>Caden Parks</td>
-                <td>Male</td>
-                <td>1999-12-21</td>
-                <td>24</td>
-                <td>184.00</td>
-                <td>71</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
+    <div class="header">
+        <h1>MacroTracker</h1>
+        {% if current_user %}
+        <div class="logout-button">
+            Welcome, <b><a href="/profile">{{ current_user['user_name'] }}</a></b>
+            <form action="/logout" method="post">
+                <button type="submit" class="logout-button">Logout</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="logout-button"></div>
+        <button style="float: right;" onclick="renderTemplate()">Sign Up/Login</button>
+        {% endif %}
+        <script>
+            function renderTemplate() {
+                fetch('/signup')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Unable to perform action');
+                        }
+                        return response.text();
+                    })
+                    .then(html => {
+                        // Replace the current page content with the rendered HTML
+                        document.documentElement.innerHTML = html;
+                    })
+                    .catch(error => {
+                        console.error('There was a problem with the fetch operation:', error);
+                    });
+            }
+        </script>
+    </div>
+    <div class="profile-info">
+        <h2>User Profile</h2>
+        <form action="/profile" method="post">
+            <label for="user_name">Name:</label>
+            <input type="text" id="Name" name="user_name" value="{{ current_user['user_name'] }}" ><br><br>
+            
+            <label for="userID">User ID:</label>
+            <input type="text" id="userID" name="userID" value="{{ current_user['userID'] }}" readonly><br><br>
+            
+            <label for="gender">Gender:</label>
+            <select name="gender">
+                <option value="" disabled>Select Gender</option>
+                <option value="male" {% if current_user['gender'] == 'male' %} selected {% endif %}>Male</option>
+                <option value="female" {% if current_user['gender'] == 'female' %} selected {% endif %}>Female</option>
+                <option value="other" {% if current_user['gender'] == 'other' %} selected {% endif %}>Other</option>
+                <option value="prefer_not_to_say" {% if current_user['gender'] == 'prefer_not_to_say' %} selected {% endif %}>Prefer Not to Say</option>
+            </select><br><br>
+            
+            
+            <label for="dob">Date of Birth:</label>
+            <input type="date" id="dob" name="dob" value="{{ current_user['dob'] }}" readonly><br><br>
+            
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" value="{{ current_user['age'] }}"><br><br>
+            
+            <label for="weight">Weight (lb):</label>
+            <input type="number" id="weight" name="weight" value="{{ current_user['weight'] }}"><br><br>
+            
+            <label for="height">Height (inches):</label>
+            <input type="number" id="height" name="height" value="{{ current_user['height'] }}"><br><br>
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" placeholder="Change password"><br><br>
+            
+            <button type="submit">Update Profile</button>
+        </form>
+    </div>
 </body>
 </html>

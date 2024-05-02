@@ -2,38 +2,59 @@
 <html>
 <head>
     <title>MacroTracker</title>
+    <style>
+        .header {
+            background-color: #c5f1cc;
+            text-align: center;
+        }
+        h1 {
+            display: inline-block;
+        }
+        .user-info {
+            float: left;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+        .logout-button {
+            float: right;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
     <div class="header" style="text-align: center;">
-        <h1 style="background-color: #c5f1cc;">
-            MacroTracker
-            {% if current_user %}
-            <span>Welcome, {{ current_user['user_name'] }}</span>
-            <form action="/logout" method="post" style="display: inline;">
-                <button type="submit">Logout</button>
+        <h1>MacroTracker</h1>
+        {% if current_user %}
+        <div class="logout-button">
+            Welcome, <b><a href="/profile">{{ current_user['user_name'] }}</a></b>
+            <form action="/logout" method="post">
+                <button type="submit" class="logout-button">Logout</button>
             </form>
-            {% else %}
-            <button style="float: right;" onclick="renderTemplate()">Sign Up/Login</button>
-            {% endif %}
-            <script>
-                function renderTemplate() {
-                    fetch('/signup')
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Unable to perform action');
-                            }
-                            return response.text();
-                        })
-                        .then(html => {
-                            // Replace the current page content with the rendered HTML
-                            document.documentElement.innerHTML = html;
-                        })
-                        .catch(error => {
-                            console.error('There was a problem with the fetch operation:', error);
-                        });
-                }
-            </script>
-        </h1>
+        </div>
+        {% else %}
+        <div class="logout-button"></div>
+        <button style="float: right;" onclick="renderTemplate()">Sign Up/Login</button>
+        {% endif %}
+        <script>
+            function renderTemplate() {
+                fetch('/signup')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Unable to perform action');
+                        }
+                        return response.text();
+                    })
+                    .then(html => {
+                        // Replace the current page content with the rendered HTML
+                        document.documentElement.innerHTML = html;
+                    })
+                    .catch(error => {
+                        console.error('There was a problem with the fetch operation:', error);
+                    });
+            }
+        </script>
+    
         <p>FoodItems</p>
     </div>
     <table style="width:100%">
