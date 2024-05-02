@@ -16,13 +16,14 @@ config = {
 
 @app.route('/')
 def foodItem():
-    if 'current_user' not in session:
-        return redirect(url_for('login'))
+    # if 'current_user' not in session:
+    #     return redirect(url_for('login'))
 
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM foodItem")
     food_items = cursor.fetchall()
+    user_data = session.get("current_user")
     cursor.close()
     conn.close()
     return render_template('foodItem.html', current_user=user_data, food_items=food_items)
@@ -77,7 +78,7 @@ def profile():
 @app.route('/logout')
 def logout():
     session.pop('current_user', None)
-    return redirect(url_for('login'))
+    return redirect(url_for('foodItem'))
 
 ##### LOGIN/SIGNUP FUNCTIONALITY
 @app.route('/login')

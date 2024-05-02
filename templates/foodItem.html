@@ -28,7 +28,7 @@
         {% if current_user %}
         <div class="logout-button">
             Welcome, <b><a href="/profile">{{ current_user['user_name'] }}</a></b>
-            <form action="/logout" method="post">
+            <form action="/logout">
                 <button type="submit" class="logout-button">Logout</button>
             </form>
         </div>
