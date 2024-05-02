@@ -3,27 +3,29 @@ import mysql.connector
 import os, json
 
 app = Flask(__name__)
-app.secret_key = os.getenv('MYSQL_PASSWORD')
+app.secret_key = os.getenv('MYSQL_PASSWORD', 'Jinrie2713')
 
 config = {
     'host': 'localhost',
     'user': 'root',
-    'password': os.getenv('MYSQL_PASSWORD'),
+    'password': 'Jinrie2713',
     'database': 'macrotracker'
 }
 
 user_data = {}
 
-@app.route('/')
+@app.route('/foodItem')
 def foodItem():
+    if 'current_user' not in session:
+        return redirect(url_for('login'))
+
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM foodItem")
-    food_items = cursor.fetchall()  # Fetch all rows from the result
+    food_items = cursor.fetchall()
     cursor.close()
     conn.close()
-    print(user_data)
-    return render_template('foodItem.html', current_user=user_data, food_items=food_items)
+    return render_template('foodItem.html', current_user=session.get('current_user'), food_items=food_items)
 
 ##### USER PROFILE FUNCTIONALITY #####
 @app.route('/profile', methods=['GET', 'POST'])
@@ -40,11 +42,18 @@ def profile():
         weight = request.form['weight']
         height = request.form['height']
         password = request.form['password']
+        target_daily_cals = request.form['target_daily_cals']
         
-        # Update the user's information in the database
-        # (You need to implement this part)
+        conn = mysql.connector.connect(**config)
+        cursor = conn.cursor()
+        cursor.execute("""UPDATE user 
+                       SET user_name=%s, gender=%s, dob=%s, age=%s, weight=%s, height=%s, password=%s, target_daily_cals=%s
+                       WHERE userID = %s""",
+                        (fullname, gender, dob, age, weight, height, password, target_daily_cals, userID))
+        conn.commit()
+        cursor.close()
+        conn.close()
 
-        # Assuming the update was successful, update the session data
         user_data = {
             'userID': userID,
             'user_name': fullname,
@@ -53,21 +62,10 @@ def profile():
             'age': age,
             'weight': weight,
             'height': height,
-            'password': password
+            'password': password,
+            'target_daily_cals': target_daily_cals
         }
-        # print(user_data)
-        conn = mysql.connector.connect(**config)
-        cursor = conn.cursor()
-        cursor.execute("""UPDATE user 
-                       SET user_name=%s, gender=%s, age=%s, weight=%s, height=%s, password=%s
-                       WHERE userID = %s
-                       """,
-                        (fullname, gender, age, weight, height, password, userID))
-        results = cursor.fetchone()
-        print(results)
-        conn.commit()
-        cursor.close()
-        conn.close()
+        
         session['current_user'] = user_data
         return redirect(url_for('profile'))
     

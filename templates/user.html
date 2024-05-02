@@ -85,7 +85,6 @@
                 <option value="prefer_not_to_say" {% if current_user['gender'] == 'prefer_not_to_say' %} selected {% endif %}>Prefer Not to Say</option>
             </select><br><br>
             
-            
             <label for="dob">Date of Birth:</label>
             <input type="date" id="dob" name="dob" value="{{ current_user['dob'] }}" readonly><br><br>
             
@@ -97,11 +96,19 @@
             
             <label for="height">Height (inches):</label>
             <input type="number" id="height" name="height" value="{{ current_user['height'] }}"><br><br>
-            
+
+            <label for="calorie_goal">Calorie Goal:</label>
+            <input type="number" id="calorie_goal" name="calorie_goal" value="{{ current_user['target_daily_cals'] or '2000' }}" placeholder="Enter your daily calorie goal"><br><br>
+
+
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" placeholder="Change password"><br><br>
             
             <button type="submit">Update Profile</button>
+        </form>
+        <!-- Button to go back to the foodItem page -->
+        <form action="/foodItem">
+            <button type="submit">Back to Food Items</button>
         </form>
     </div>
 </body>
