@@ -237,6 +237,23 @@ def goals():
     
     return render_template('goals.html', current_user=user_data, goals=goals)
 
+@app.route('/editGoals', methods=['GET', 'POST'])
+def editGoals():
+    user_data = session.get("current_user")
+    goalName = request.form['goalName']
+    target_daily_cals = request.form['target_daily_cals']
+    target_date = request.form['target_date']
+
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+    cursor.execute("""UPDATE goals 
+                       SET goalName=%s, target_daily_cals=%s, deadline=%s""",
+                        (goalName, target_daily_cals, target_date))
+    goals = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+
 if __name__ == '__main__':
     app.run(debug=True)
 
