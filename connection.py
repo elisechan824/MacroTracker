@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import mysql.connector
-import os, json
+import os
 
 app = Flask(__name__)
 app.secret_key = os.getenv('MYSQL_PASSWORD', 'Jinrie2713')
@@ -11,8 +11,6 @@ config = {
     'password': 'Jinrie2713',
     'database': 'macrotracker'
 }
-
-user_data = {}
 
 @app.route('/foodItem')
 def foodItem():
@@ -34,7 +32,7 @@ def profile():
         return redirect(url_for('login'))
     user_data = session['current_user']
     if request.method == 'POST':
-        userID = request.form['userID']
+        userID = user_data['userID']
         fullname = request.form['user_name']
         gender = request.form['gender']
         dob = request.form['dob']
@@ -54,17 +52,16 @@ def profile():
         cursor.close()
         conn.close()
 
-        user_data = {
-            'userID': userID,
+        user_data.update({
             'user_name': fullname,
             'gender': gender,
-            'dob': dob.format(),
+            'dob': dob,
             'age': age,
             'weight': weight,
             'height': height,
             'password': password,
             'target_daily_cals': target_daily_cals
-        }
+        })
         
         session['current_user'] = user_data
         return redirect(url_for('profile'))
@@ -95,33 +92,30 @@ def addUser():
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM foodItem")
-    food_items = cursor.fetchall()
-
     cursor.execute("SELECT * FROM user WHERE userID = %s", (userID, ))
     results = cursor.fetchone()
 
-    if results != None:
+    if results is not None:
         return redirect(url_for('signup') + '?error_message=userID+already+taken')
-    else :
+    else:
         cursor.execute("INSERT INTO user (userID, user_name, gender, dob, age, weight, height, password) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                    (userID, fullname, gender, dob, age, weight, height, password))
+                       (userID, fullname, gender, dob, age, weight, height, password))
         user_data = {
             'userID': userID,
             'user_name': fullname,
             'gender': gender,
-            'dob': dob.format(),
+            'dob': dob,
             'age': age,
             'weight': weight,
             'height': height,
-            'password': password
+            'password': password,
+            'target_daily_cals': ''
         }
-        print(user_data)
         conn.commit()
         cursor.close()
         conn.close()
         session['current_user'] = user_data
-        return render_template('foodItem.html', current_user=user_data, food_items=food_items)
+        return redirect(url_for('foodItem'))
 
 @app.route('/loginUser', methods=['POST'])
 def loginUser():
@@ -130,19 +124,12 @@ def loginUser():
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
 
-    # get fooditems
-    cursor.execute("SELECT * FROM foodItem")
-    food_items = cursor.fetchall()
-    
-    # get user data
-    cursor.execute("SELECT * FROM user WHERE userID = %s;",
-                   (userID,))
+    cursor.execute("SELECT * FROM user WHERE userID = %s;", (userID,))
     user = cursor.fetchone()
 
     cursor.close()
     conn.close()
 
-    # login verification logic
     if user is None:
         return redirect(url_for('login') + '?error_message=No+such+user')
     if password != user[7]:
@@ -151,27 +138,26 @@ def loginUser():
         'userID': user[0],
         'user_name': user[1],
         'gender': user[2],
-        'dob': user[3].isoformat(),
+        'dob': user[3],
         'age': user[4],
         'weight': user[5],
         'height': user[6],
-        'password': user[7]
+        'password': user[7],
+        'target_daily_cals': user[8]
     }
      
     session['current_user'] = user_data
-    return render_template('foodItem.html', current_user=user_data, food_items=food_items)
+    return redirect(url_for('foodItem'))
 
 ##### FOODITEM FUNCTIONALITY #####
 @app.route('/insertFoodItem', methods=['POST'])
 def insertFoodItem():
-    # fetch form info from foodItem.html
     foodID = request.form['foodID']
     foodName = request.form['foodName']
     foodGroup = request.form['foodGroup']
     calories = request.form['calories']
     servingSize = request.form['servingSize']
 
-    # post to database
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
     cursor.execute("INSERT INTO foodItem (foodID, foodName, foodGroup, calories, servingSize) VALUES (%s, %s, %s, %s, %s)",
