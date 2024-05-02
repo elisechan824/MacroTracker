@@ -22,7 +22,8 @@ def foodItem():
     food_items = cursor.fetchall()  # Fetch all rows from the result
     cursor.close()
     conn.close()
-    return render_template('foodItem.html', food_items=food_items)
+    print(user_data)
+    return render_template('foodItem.html', current_user=user_data, food_items=food_items)
 
 ##### USER PROFILE FUNCTIONALITY #####
 @app.route('/profile', methods=['GET', 'POST'])
@@ -57,7 +58,6 @@ def profile():
         # print(user_data)
         conn = mysql.connector.connect(**config)
         cursor = conn.cursor()
-        cursor = conn.cursor(buffered=True)
         cursor.execute("""UPDATE user 
                        SET user_name=%s, gender=%s, age=%s, weight=%s, height=%s, password=%s
                        WHERE userID = %s
@@ -96,6 +96,10 @@ def addUser():
     password = request.form['password']
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM foodItem")
+    food_items = cursor.fetchall()
+
     cursor.execute("SELECT * FROM user WHERE userID = %s", (userID, ))
     results = cursor.fetchone()
 
@@ -119,7 +123,7 @@ def addUser():
         cursor.close()
         conn.close()
         session['current_user'] = user_data
-        return redirect(url_for('foodItem'))
+        return render_template('foodItem.html', current_user=user_data, food_items=food_items)
 
 @app.route('/loginUser', methods=['POST'])
 def loginUser():
