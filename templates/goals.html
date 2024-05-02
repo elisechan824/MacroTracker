@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Goals</title>
+    <style>
+        .header {
+            background-color: #c5f1cc;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <div class="header" style="text-align: center;">
+        <h1>Goals</h1>
+    </div>
+    
+
+    <h2>Goals</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Goal</th>
+                <th>Target Daily Caloric Intake</th>
+                <th>Target Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for goal in goals %}
+            <tr>
+                <td>{{ goal[0] }}</td>
+                <td>{{ goal[2] }}</td>
+                <td>{{ goal[3] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Edit Goals</h2>
+    <form action="/edit_goals" method="post">
+        <label for="edit_goal">Edit Goal:</label>
+        <select name="edit_goal">
+            {% for goal in goals %}
+                <option value="{{ goal }}">{{ goal[0] }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" id="new_goal" name="new_goal" placeholder="Enter new goal">
+        <input type="text" id="new_goal" name="new_goal" placeholder="Enter new goal">
+        <input type="text" id="new_goal" name="new_goal" placeholder="Enter new goal">
+        <button type="submit">Update Goal</button>
+    </form>
+
+    <h2>Add New Goal</h2>
+    <form action="/add_goal" method="post">
+        <label for="new_goal">New Goal:</label>
+        <input type="text" id="new_goal" name="new_goal" placeholder="Enter new goal">
+        <button type="submit">Add Goal</button>
+    </form>
+
+    <h2>Delete Goal</h2>
+    <form action="/delete_goal" method="post">
+        <label for="delete_goal">Delete Goal:</label>
+        <select name="delete_goal">
+            {% for goal in goals %}
+                <option value="{{ goal }}">{{ goal[0] }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Delete Goal</button>
+    </form>
+
+    <script>
+            function navigate() {
+                var select = document.querySelector('select');
+                var selectedPage = select.options[select.selectedIndex].value;
+                if (selectedPage) {
+                    window.location.href = selectedPage;
+                }
+            }
+        </script>
+</head>
+<body>
+   
+</body>
+</html>

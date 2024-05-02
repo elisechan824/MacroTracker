@@ -16,9 +16,6 @@ config = {
 
 @app.route('/')
 def foodItem():
-    # if 'current_user' not in session:
-    #     return redirect(url_for('login'))
-
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM foodItem")
@@ -60,7 +57,7 @@ def profile():
         cursor.close()
         conn.close()
 
-        user_data.update({
+        user_data = {
             'user_name': fullname,
             'gender': gender,
             'dob': dob,
@@ -69,7 +66,7 @@ def profile():
             'height': height,
             'password': password
             # 'target_daily_cals': target_daily_cals
-        })
+        }
         
         session['current_user'] = user_data
         return redirect(url_for('profile'))
@@ -79,6 +76,7 @@ def profile():
 @app.route('/logout')
 def logout():
     session.pop('current_user', None)
+    user_data = {}
     return redirect(url_for('foodItem'))
 
 ##### LOGIN/SIGNUP FUNCTIONALITY
@@ -216,6 +214,28 @@ def updateFoodItem():
     cursor.close()
     conn.close()
     return redirect(url_for('foodItem'))
+
+##### GOALS FUNCTIONALITY #####
+@app.route('/goals', methods=['GET', 'POST'])
+def goals():
+    user_data = session.get("current_user")
+    if 'current_user' not in session:
+        return redirect(url_for('login'))
+    # load up goal info
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM goals WHERE UserID = %s", (user_data['userID'], ))
+    goals = cursor.fetchall()
+    print(goals)
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    # progress bar logic
+
+    # modify goal logic
+    
+    return render_template('goals.html', current_user=user_data, goals=goals)
 
 if __name__ == '__main__':
     app.run(debug=True)
