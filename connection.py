@@ -226,7 +226,7 @@ def goals():
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM goals WHERE UserID = %s", (user_data['userID'], ))
     goals = cursor.fetchall()
-    print(goals)
+    # print(goals)
     conn.commit()
     cursor.close()
     conn.close()
@@ -237,7 +237,7 @@ def goals():
     
     return render_template('goals.html', current_user=user_data, goals=goals)
 
-@app.route('/editGoals', methods=['GET', 'POST'])
+@app.route('/editGoals', methods=['POST'])
 def editGoals():
     user_data = session.get("current_user")
     goalName = request.form['goalName']
@@ -246,13 +246,66 @@ def editGoals():
 
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
-    cursor.execute("""UPDATE goals 
-                       SET goalName=%s, target_daily_cals=%s, deadline=%s""",
-                        (goalName, target_daily_cals, target_date))
+    cursor.execute("SELECT * FROM goals WHERE UserID = %s", (user_data['userID'], ))
     goals = cursor.fetchall()
+    # print(goalName)
+    cursor.execute("""UPDATE goals 
+                       SET target_daily_cals=%s, deadline=%s 
+                        WHERE goalName=%s""",
+                        (target_daily_cals, target_date, goalName))
+    updated_goal = cursor.fetchone()
+
+    cursor.execute("SELECT * FROM goals WHERE UserID = %s", (user_data['userID'], ))
+    goals = cursor.fetchall()   
+
     conn.commit()
     cursor.close()
     conn.close()
+    return render_template('goals.html', current_user=user_data, goals=goals)
+
+@app.route('/addGoal', methods=['GET', 'POST'])
+def addGoal():
+    user_data = session.get("current_user")
+
+    # form info
+    new_goal = request.form['new_goal']
+    new_target_daily_cals = request.form['new_target_daily_cals']
+    new_target_date = request.form['new_target_date']
+
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+
+    cursor.execute("INSERT INTO goals (goalName, userID, target_daily_cals, deadline) VALUES (%s, %s, %s, %s)",
+                   (new_goal, user_data['userID'], new_target_daily_cals, new_target_date))
+    cursor.execute("SELECT * FROM goals WHERE UserID = %s", (user_data['userID'], ))
+    
+    goals = cursor.fetchall()   
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return render_template('goals.html', current_user=user_data, goals=goals)
+
+@app.route('/deleteGoal', methods=['GET', 'POST'])
+def deleteGoal():
+    user_data = session.get("current_user")
+    selected_goal = request.form['delete_goal']
+    goalName = selected_goal.split(',')[0].strip('() ').strip(" '' ")
+    print(goalName)
+
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM goals WHERE goalName=%s", (goalName, ))
+    
+    cursor.execute("SELECT * FROM goals WHERE UserID = %s", (user_data['userID'], ))  
+    goals = cursor.fetchall() 
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return render_template('goals.html', current_user=user_data, goals=goals)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -21,7 +21,11 @@
         }
     </style>
     <div class="header" style="text-align: center;">
+        <form style="float: left; margin-top: 10px; margin-left: 10px;" action="/">
+            <button type="submit">Back to Food Items</button>
+        </form>
         <h1>Goals</h1>
+        
     </div>
     
 
@@ -47,37 +51,38 @@
 
     <h2>Edit Goals</h2>
     <form action="/editGoals" method="post" id="editForm">
-        <label for="editGoals">Edit Goal:</label>
         <select name="editGoals" id="edit_goal_select" onchange="setDefaultValues()">
             <option value="">Select a Goal</option>
             {% for goal in goals %}
                 <option value="{{ goal }}">{{ goal[0] }}</option>
             {% endfor %}
         </select><br>
-        <input type="text" id="goalName" name="goalName" placeholder="Goal Name">
+        <input type="text" id="goalName" name="goalName" placeholder="Goal Name" readonly>
         <input type="text" id="target_daily_cals" name="target_daily_cals" placeholder="Target Daily Calories">
         <input type="date" id="target_date" name="target_date" >
         <button type="submit">Update Goal</button>
     </form>
 
     <h2>Add New Goal</h2>
-    <form action="/add_goal" method="post">
-        <label for="new_goal">New Goal:</label>
-        <input type="text" id="new_goal" name="new_goal" placeholder="Enter new goal">
+    <form action="/addGoal" method="post">
+        <input type="text" id="new_goal" name="new_goal" placeholder="Enter new goal" required>
+        <input type="text" id="new_target_daily_cals" name="new_target_daily_cals" placeholder="Enter target daily caloric intake">
+        <input type="date" id="new_target_date" name="new_target_date" required>
         <button type="submit">Add Goal</button>
     </form>
 
     <h2>Delete Goal</h2>
-    <form action="/delete_goal" method="post">
+    <form action="/deleteGoal" method="post">
         <label for="delete_goal">Delete Goal:</label>
         <select name="delete_goal">
+            <option value="">Select a Goal</option>
             {% for goal in goals %}
                 <option value="{{ goal }}">{{ goal[0] }}</option>
             {% endfor %}
         </select>
         <button type="submit">Delete Goal</button>
     </form>
-    <script>
+    <!-- <script>
             function navigate() {
                 var select = document.querySelector('select');
                 var selectedPage = select.options[select.selectedIndex].value;
@@ -85,18 +90,25 @@
                     window.location.href = selectedPage;
                 }
             }
-    </script>
+    </script> -->
     <script>
         function setDefaultValues() {
             var select = document.getElementById("edit_goal_select");
             var selectedOption = select.options[select.selectedIndex];
             var selectedGoal = selectedOption.value.split(',');
-            document.getElementById("goalName").value = selectedGoal[0];
-            document.getElementById("target_daily_cals").value = selectedGoal[2] ? selectedGoal[2] : '';
+            var goalName = selectedGoal[0].replace(/['()]/g, '').trim();
             
-            // var dob = new Date(selectedGoal[3]);
-            // var formattedDate = dob.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-            document.getElementById("dob").value = selectedGoal[3];
+
+            var year = selectedGoal[3].replace('datetime.date(', '').trim();       
+            var month = selectedGoal[4].trim();
+            var day = selectedGoal[5].replace('))', '').trim();
+            month = month.padStart(2, '0');
+            day = day.padStart(2, '0');
+            var formattedDate = year + '-' + month + '-' + day;
+            
+            document.getElementById("goalName").value = goalName;
+            document.getElementById("target_daily_cals").value = selectedGoal[2] ? selectedGoal[2] : '';
+            document.getElementById("target_date").value = formattedDate;
         }
     </script>
 </head>
